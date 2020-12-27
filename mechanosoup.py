@@ -241,22 +241,22 @@ with open("HTMLDATAFRAME_final.p", 'rb') as pickle_file:
 print()
 
 # %% Prune soup
-# import random
-# amount_of_null = 0
-# candidate_for_deletion = []
-# ## Check data distribution. and prune off some of the null data...
-# for i in html_text_data_frame:
-#     # We will
-#     if html_text_data_frame[i]["text_class"] == 0:
-#         if random.randrange(10) > 2:
-#             candidate_for_deletion.append(i)
-#             continue
-#         amount_of_null += 1
+import random
+amount_of_null = 0
+candidate_for_deletion = []
+## Check data distribution. and prune off some of the null data...
+for i in html_text_data_frame:
+    # We will
+    if html_text_data_frame[i]["text_class"] == 0:
+        if random.randrange(10) > 2:
+            candidate_for_deletion.append(i)
+            continue
+        amount_of_null += 1
 
-# # Do the deletion randomly
-# for i in candidate_for_deletion:
-#     del html_text_data_frame[i]
-# print(amount_of_null)
+# Do the deletion randomly
+for i in candidate_for_deletion:
+    del html_text_data_frame[i]
+print(amount_of_null)
 
 # %% Construct dataset
 import numpy as np
@@ -306,7 +306,7 @@ Data_Y_categorical = to_categorical(Data_Y)
 print("Shape of Data_Y_categorical", Data_Y_categorical.shape)
 
 # %% Train and validation split
-split_value = 250
+split_value = int(Data_X.shape[0]*0.80)
 # print(Data_X.shape)
 X_TRAIN         = Data_X[:split_value]
 X_VALIDATE      = Data_X[split_value::]
@@ -322,18 +322,29 @@ Y_VALIDATE      = Data_Y_categorical[split_value::]
 # %% Build the learning machine
 print(Data_Y_categorical.shape)
 model = models.Sequential()
-model.add(layers.LSTM(128, activation='relu', input_shape=(8, 22)))
-model.add(layers.Dense(128, activation='relu'))
+model.add(layers.LSTM(512, activation='elu', input_shape=(8, 22)))
+model.add(layers.Dropout(0.2))
+model.add(layers.Dense(256, activation='elu'))
+model.add(layers.Dropout(0.2))
+model.add(layers.Dense(64, activation='elu'))
+model.add(layers.Dropout(0.2))
+model.add(layers.Dense(32, activation='elu'))
 
 model.add(layers.Flatten())
+model.add(layers.Dense(16, activation='elu'))
+
+# Output layer with number of defined text classes
 model.add(layers.Dense(Data_Y_categorical.shape[1], activation='softmax'))
+
+# Callback to prevent overtraining
+callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
 
 # We use focal loss, likely to have highly imbalances dataset, try pruning out null entries, I like to assign them class 
 model.compile(loss=categorical_focal_loss(), optimizer="adam", metrics=['accuracy'])
 
 print(model.summary())
-
-model.fit(X_TRAIN, Y_TRAIN, epochs=5, batch_size=64, validation_split= 0.1)
+# Train the machine
+model.fit(X_TRAIN, Y_TRAIN, epochs=200, batch_size=64, validation_split= 0.1, callbacks=[callback])
 
 # %% Final evaluation of the model
 scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
