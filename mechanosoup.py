@@ -270,7 +270,12 @@ data_vectors = 8
 for i in html_text_data_frame:
     X = []
     for j in html_text_data_frame[i]:
-        if "Data" == j or "text_class" == j:
+        # Omit placing vertain data in matrix describing text. Useful to find what matters most.
+        # Data and text_class must occur in this list.
+        # skip_list = ["Data", "text_class" , "next", "previous", "parent_tags", "attribute_mask", "re_tolkens", "nested_structure", "name"]
+        skip_list = ["Data", "text_class"]
+
+        if [] != [True for i in skip_list if j in i]:
             continue
 
         if html_text_data_frame[i][j] is None:
@@ -297,8 +302,8 @@ for i in html_text_data_frame:
         
 
 print("Shape of Data_X", Data_X.shape)
-Data_X_classifier = Data_X.reshape((Data_X.shape[0],Data_X.shape[1]*Data_X.shape[2]))
-print("Shape of Data_X_classifier", Data_X_classifier.shape)
+# Data_X_classifier = Data_X.reshape((Data_X.shape[0],Data_X.shape[1]*Data_X.shape[2]))
+# print("Shape of Data_X_classifier", Data_X_classifier.shape)
 
 # Get text class
 Data_Y = [int(html_text_data_frame[i]["text_class"]) for i in html_text_data_frame]
@@ -320,9 +325,9 @@ Y_VALIDATE      = Data_Y_categorical[split_value::]
 # print(Y_VALIDATE.shape)
 
 # %% Build the learning machine
-print(Data_Y_categorical.shape)
 model = models.Sequential()
-model.add(layers.LSTM(512, activation='elu', input_shape=(8, 22)))
+model.add(layers.LSTM(512, activation='elu', input_shape=(Data_X.shape[1], Data_X.shape[2])))
+
 model.add(layers.Dropout(0.2))
 model.add(layers.Dense(256, activation='elu'))
 model.add(layers.Dropout(0.2))
@@ -350,14 +355,17 @@ model.fit(X_TRAIN, Y_TRAIN, epochs=200, batch_size=64, validation_split= 0.1, ca
 scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
 VALIDATION_fit = model.predict(X_VALIDATE)
 TRAINING_fit = model.predict(X_TRAIN)
-print("Accuracy: %.2f%%" % (scores[1]*100))
+# print("Accuracy: %.2f%%" % (scores[1]*100))
+print(classification_report(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1)))
 
 # VALIDATION MATRIX
 val_matrix = confusion_matrix(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
 print(val_matrix)
 
 # VALIDATION MATRIX
+
 matrix = confusion_matrix(TRAINING_fit.argmax(axis=1), Y_TRAIN.argmax(axis=1))
+
 print(matrix)
 
 ## Cleanup and pretty print
