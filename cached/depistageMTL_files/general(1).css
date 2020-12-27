@@ -1,0 +1,12 @@
+/* moreLikeThis */
+#moreLikeThis .tx-solr .results-topic a {
+    color: #595959;
+}
+#moreLikeThis .tx-solr .results-topic a:hover {
+    color: #0189EF;
+}
+
+.tx-solr .update.update-primary  {
+    float: none;
+    display: inline-block;
+}

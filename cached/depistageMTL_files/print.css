@@ -1,0 +1,167 @@
+/************************************************/
+/* Styles pour la version imprimable seulement                   */
+/************************************************/
+
+/* Enlever les blocs non nécessaire dans la version imprimable */
+#contenu_droite {
+  display: none;
+}
+#bloc_flashmontreal {
+  display: none;
+}
+#outils_top {
+  display: none;
+}
+#piv_nav {
+  display: none;
+}
+#menu_pied {
+  display: none;
+}
+#blocs_bas {
+  display: none;
+}
+.footer { 
+    display:none; 
+}
+/* Retrait bandeau bleu pro */
+.accueil-pro .body-pro .warning { 
+    display:none; 
+}
+/* Retrait bandeau bleu ou aller */
+.container .main .section-search { 
+    display:none; 
+}
+
+/* Ajustement des tailles */
+#contenu_main {
+  width: 1000px;
+}
+#main_menu {
+        font-size: 0.8em;
+        display: none;
+}
+#mainmenu_3rd {
+  display: none;
+}
+
+/* Enlever les styles des bordures */
+div.rbtop_border { border-top: 0; }
+div.rbbot_border { border-bottom: 0; }
+.rbcontent { border-right: 0; border-left: 0; }
+
+
+/* Redéfinir les styles de bases */
+h1 {
+        color: #616161;
+        padding: 0px;
+        margin: 0px;
+        font-size: 2.6em;
+        font-weight: normal;
+}
+
+h2 {
+        color: #003366;
+        font-size: 2.2em;
+        font-weight: bold;
+        margin-bottom: 5px;
+}
+
+h3 {
+        color: #626260;
+        font-size: 1.6em;
+        font-weight: bold;
+        margin-left: 3px;
+        margin top: 16px;
+}
+
+h4 {
+        color: #616161;
+        padding: 0px;
+        margin: 0px;
+        font-size: 1.6em;
+        font-weight: normal;
+}
+
+h5 {
+        color: #616161;
+        padding: 0px;
+        margin: 0px;
+        font-size: 1.4em;
+        font-style: normal;
+        line-height: 16px;
+}
+
+h6 {
+        color: #5B85AA;
+        padding: 0px;
+        margin: 0px;
+        font-size: 1.2em;
+        font-weight: bold;
+}
+
+
+p {
+        margin-top: 20px;
+        font-weight: normal;
+        line-height: 22px;
+        font-size: 1.6em;
+} 
+ul li {
+        margin-top: 20px;
+        font-weight: normal;
+        line-height: 20.8px;
+        font-size: 1em;
+} 
+
+ul ol {
+        margin-top: 20px;
+        font-weight: normal;
+        line-height: 20.8px;
+        font-size: 1em;
+} 
+
+/* Styles particulier pour IE 6 en version imprimable*/
+* html #nouveautes {
+  width: 400px;
+  height: auto;
+}
+* html #blocs_evenements_actualites {
+  height: auto;
+}
+* html #bloc_contenu {
+  width: 800px;
+}
+* html #contenu_main {
+  width: 800px;
+}
+* html #contenu_gauche {
+  width: 800px;
+}
+* html #blocs_bas {
+  width: 800px;
+}
+* html .ui-tabs .ui-tabs-panel {
+  width: 800px;
+}
+
+/* Styles pour les fiches thématiques */
+#fichethematique-single .update-body .update-entry.close .update-entry-title .arrow-down-grey-small {
+    display: inline-block;
+}
+
+#fichethematique-single .update-body .update-entry.close .update-entry-body{
+    display: block;
+}
+#fichethematique-single .update-body .update-entry.close .update-entry-body .csc-linkToTop {
+    display: none !important;
+}
+
+#fichethematique-single .update-body .update-entry.close .update-entry-title .arrow-right-dark-medium {
+    display: none !important;
+}
+
+/* Styles pour le PIV */
+header .nav-secondary ul li {
+    margin-top: 0;
+}
