@@ -1,0 +1,270 @@
+.ajax-loading {
+    opacity: 0.25;
+}
+
+/* style selon le guide; issue #4375, commentaire #3 */
+.section-body .content h1{ font-size: 42px; font-weight: bold; line-height: 1; color: #363636;}
+.section-body .content h2{ font-size: 32px; font-weight: bold; line-height: 1; color: #363636;}
+.section-body .content h3{ font-size: 24px; font-weight: bold; line-height: 1; color: #363636;}
+.section-body .content h4{ font-size: 18px; font-weight: bold; line-height: 1; color: #363636;}
+hr.hr-geant{height: 8px; background-color: #363636; border: none;}
+/* home */
+/* news-home*/
+.section-body .slide .update .update-image img{
+  /*  width: auto;
+    max-height: 108px;
+    min-height: 108px; */
+}
+
+.section-body .slide .update.update-large .update-image img{
+   /* min-height: 267px;
+    max-height: 267px; */
+   height: auto;
+}
+
+/* News single */
+.news .article .update-body .update-image {
+    width: 100%;
+}
+
+.news .article .update-body .news-img-wrap {
+    float: none;
+    margin: 0;
+}
+
+.news .article .update-body .news-img-wrap a{
+    float: none;
+    border: none;
+}
+
+.news .article .update-foot .social span {
+    float:left;
+    margin: 0 10px 0 0;
+}
+.news .article .update-foot .social .addthis_native_toolbox{
+    float:left;
+}
+
+/* list icones*/
+.list-icons-secondary > ul {
+      list-style-type: none;
+      list-style-image: none;
+}
+
+.slider .slides {                /*    the HTML element that will be turned into a carousel */
+    overflow: hidden;
+}
+
+.nav-dropdown .nav-col h3 img { display: block; padding-bottom: 25px; }
+
+.nav > ul > li.active {
+   box-sizing: border-box;
+   height: 66px;
+}
+.nav > ul > li.active > a { border-bottom: 4px solid #0075CC; }
+.nav > ul > li.current > a {
+   background-color:#0070C4;
+   position: relative;
+   top: -4px;
+   padding-top: 27px;
+   padding-bottom: 33px;
+   z-index: 99;
+}
+
+.nav-utilities ul li a {
+    -webkit-transition: none;
+    -o-transition: none;
+    transition: none;
+}
+
+.show-all-box {background-color: #fff; border: 1px solid #CFCFCF; left: 230px; margin-top: -290px; padding: 5px; position: absolute; z-index: 99999;}
+.show-all-box strong {float: left; padding: 10px 0 20px; font-size: 18px; line-height: 18px;}
+.show-all-box-close {cursor: pointer; float: right;}
+.show-all-box ul {height: 225px; overflow-y: scroll;}
+.show-all-box-actions {border-top: 1px solid #CFCFCF; margin-top: 10px; padding: 10px 0;}
+.show-all-box-actions .btn {margin-left: 55px;}
+
+.tx-solr li.location h2.results-topic.location-title a {color: #363636;}
+
+.tx-solr ul {list-style-image: none; margin: 0;}
+
+.tx-pagebrowse-pi1 {float: left; margin: 8px 0; width: 50%;}
+.tx-pagebrowse-pi1 .navigation li {float: left; list-style-type: none;}
+
+.solr-pagination {float: left; margin: 8px 0; width: 50%;}
+.solr-pagination .pagination li {float: left; list-style-type: none;}
+
+#map.map-search {height: 315px;}
+
+.tx-solr #map {height: 318px; width: 100%;}
+.tx-solr #map .map-popup-wrapper{ width: 280px; }
+
+.tx-solr .map-popup-wrapper h4{ margin: 10px 0px; }
+.tx-solr .map-popup-wrapper .mini-popup-ico{ float: left;}
+.tx-solr .map-popup-wrapper p{ text-indent: 5px; }
+.tx-solr .map-popup-wrapper p.second-line{ text-indent: 25px; margin-bottom: 5px; }
+.tx-solr .map-popup-wrapper a.btn {width: 82%}
+
+.icon-show-all-box-close {cursor: pointer; padding: 0 13px 8px;}
+.icon-show-all-box-close span:before,
+.icon-show-all-box-close span,
+.icon-show-all-box-close span:after {position: absolute; content: ''; display: block; width: 25px; height: 2px;}
+.icon-show-all-box-close span {background-color: transparent;}
+.icon-show-all-box-close span:before {top: -5px; background: #000; -webkit-transform: rotate(45deg); transform: rotate(45deg);}
+.icon-show-all-box-close span:after {top: -5px; bottom: auto; background: #000; -webkit-transform: rotate(-45deg); transform: rotate(-45deg);}
+
+/* Fiche Thematique */
+/* single */
+#fichethematique-single .update-entry-title{ cursor: pointer; }
+#fichethematique-single .update-body .update-entry.close .update-entry-body,
+#fichethematique-single .update-body .update-entry.close .update-entry-title .arrow-down-grey-small{
+    display: none;
+}
+#fichethematique-single .update-body .update-entry:not(.close) .update-entry-title .arrow-right-dark-medium{
+    display: none;
+}
+
+body.fontsize-large {
+    font-size: 1.2em;
+}
+body.fontsize-large .fontsize-large {
+    display: none;
+}
+body:not(.fontsize-large) .fontsize-normal {
+    display: none;
+}
+
+/* 6418 */
+/* breadcrumb */
+body.fontsize-large .breadcrumbs .current, body.fontsize-large .breadcrumbs a{ font-size: 14px; }
+/* menu principal */
+body.fontsize-large .nav-dropdown .nav-col ul li{font-size: 14px;}
+/* sous-titre h2 */
+body.fontsize-large .main-body .section-head .section-title, body.fontsize-large .widget-head .widget-title{ font-size: 18px; }
+body.fontsize-large .section-main-content > .section-head > .section-title{ font-size: 44px; }
+/* Lien dans les widgets */
+body.fontsize-large .widget-actions a{ font-size: 14px!important; }
+/* boite bleus warning */
+body.fontsize-large .warning p{ font-size: 18px; }
+/* footer */
+body.fontsize-large .footer-nav-secondary{ font-size: 20px;}
+body.fontsize-large .footer-nav a{ font-size: 18px;}
+body.fontsize-large .footer-nav h5{ font-size: 17px;}
+body.fontsize-large .footer-links a{font-size: 13px;}
+/* header piv -- dropped, casse l'alignement */
+/* body.fontsize-large .header-inner a, body.fontsize-large .header-inner li a { font-size: 12px; } */
+
+/* actualités */
+body.fontsize-large .tx-solr-search .section-subtitle{font-size: 19px;}
+body.fontsize-large .filters-primary .filters-row-title{font-size: 14px;}
+body.fontsize-large .tx-solr .update-primary .update-date{ font-size: 14px; }
+body.fontsize-large  .filters .filters-title{font-size: 14px;}
+body.fontsize-large .filters .filters-body h4 {font-size: 14px;}
+body.fontsize-large .filters .filters-body ul li{font-size: 14px;}
+
+.important-wrapper h2.csc-firstHeader{ text-transform: uppercase; border-bottom: 5px solid #363636; margin-bottom: 20px; }
+.important-wrapper p.bodytext{ padding: 20px; background-color: #EBEBEB; }
+.important-wrapper span.date-important{ color: #0189EF; }
+
+@media only screen and (max-width: 767px){
+    .show-all-box {left: 200px;}
+}
+@media only screen and (max-width: 639px){
+    .nav > ul > li.current > a {padding: 15px; top: 0;}
+    .nav > ul > li.active {height: inherit;}
+    .nav-dropdown {border-top: none;}
+    .show-all-box {display: none;}
+
+    .main-head{
+        /** black and white gradient **/
+        background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjMwJSIgc3RvcC1jb2xvcj0iIzAwMDAwMCIgc3RvcC1vcGFjaXR5PSIwIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjMxJSIgc3RvcC1jb2xvcj0iIzAwMDAwMCIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjM1JSIgc3RvcC1jb2xvcj0iIzAxMDEwMSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwYTBhMGEiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+        background: -moz-linear-gradient(top, rgba(54, 54, 54, 0) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,1) 35%, rgba(1,1,1,1) 35%, rgba(10,10,10,1) 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(54, 54, 54, 0)), color-stop(30%,rgba(0,0,0,0)), color-stop(35%,rgba(0,0,0,1)), color-stop(35%,rgba(1,1,1,1)), color-stop(100%,rgba(10,10,10,1))); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, rgba(54, 54, 54, 0) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,1) 35%,rgba(1,1,1,1) 35%,rgba(10,10,10,1) 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top, rgba(54, 54, 54, 0) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,1) 35%,rgba(1,1,1,1) 35%,rgba(10,10,10,1) 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top, rgba(54, 54, 54, 0) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,1) 35%,rgba(1,1,1,1) 35%,rgba(10,10,10,1) 100%); /* IE10+ */
+        background: linear-gradient(to bottom, rgba(54, 54, 54, 0) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,1) 35%,rgba(1,1,1,1) 35%,rgba(10,10,10,1) 100%); /* W3C */
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#0a0a0a',GradientType=0 ); /* IE6-8 */
+    }
+
+}
+
+@media only screen and (max-width: 639px) {
+    .login-shell .login-section {
+        height: 54px;
+        margin-top: -54px;
+    }
+  .accueil-pro-twocol .login-shell .login-section {
+            right: 0;
+  }
+  .accueil-pro-twocol .btn-print {
+        display: none;
+  }
+  .breadcrumbs .shell{
+    display:table-cell;
+    vertical-align:middle;
+    height:54px;
+  }
+  .container .main .breadcrumbs{padding:0;padding-right:160px;}
+}
+
+.accueil-pro-twocol .btn-print {
+    padding: 15px;
+}
+.accueil-pro-twocol .login-section a span {
+    margin-right: 15px;
+    padding: 0;
+}
+
+.accueil-pro-twocol .login-section a {
+    padding: 15px 0 15px 15px;
+}
+
+.accueil-pro-twocol .login-section {
+    position: absolute;
+    right: 136px;
+}
+
+
+@media only screen and (max-width: 767px) {
+    .sidebar-secondary {
+        padding-top: 70px;
+    }
+        .breadcrumbs .shell{
+                display:table-cell;
+                vertical-align:middle;
+                height:60px;
+        }
+        .main .breadcrumbs{padding:0;padding-right:350px;}
+
+    .sizetext{display: none;}
+
+}
+
+.form-search .select-wrap select {
+    width: 130%;
+}
+
+.form-search .select-wrap select::-ms-expand {
+    display: none;
+}
+
+/* fontsize-large*/
+.fontsize-large .update-single .update-entry {
+    font-size: 0.95em;
+}
+
+.fontsize-large .bodytext {
+    font-size: 0.94em;
+}
+
+.login-section {
+    height: 100%;
+}
+
+@media only screen and (max-width: 979px){
+    .update-single {
+        height: auto;
+    }
+}
+
