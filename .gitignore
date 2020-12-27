@@ -2,6 +2,7 @@
 __pycache__/
 /geckodriver.*
 /machanosoup_FULL.*
+mechanosoup_FULL.py
 /HTMLDATAFRAME_test.*
 /HTMLDATAFRAME_final.zip
 cached/
