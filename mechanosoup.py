@@ -174,14 +174,23 @@ def regexTokenizor(string):
 
 # Find all the displayed text in the page
 texts = soup.findAll(text=True)
+
 visible_texts = filter(tag_visible, texts)
 # Construct a list with all of them
+import codecs
 text_element = [t for t in visible_texts]
 for i, ij in enumerate(text_element):
+    # pickled = pickle.dumps(ij, 0).decode()
+    # pickled = codecs.encode(pickle.dumps(ij), "base64").decode()
+    # print(type(pickled))
+    # print(len(pickled))
+    # assert 1 == 0
+
     # Remove null text
     if len(ij.strip()) < 2:
         # print("SKKKKKIPED")
         continue
+    print(ij)
 
     # Nested dataframe
     html_text_data_frame[i] = {}
@@ -211,6 +220,7 @@ for i, ij in enumerate(text_element):
 
     parent = ij.findParent()
     html_text_data_frame[i]["Data"] = ij
+    # html_text_data_frame[i]["Data_base64"] = pickled
     html_text_data_frame[i]["length"] = [len(ij)]
     html_text_data_frame[i]["parent_tags"] = [len(parent)]
     html_text_data_frame[i]["name"] = [HTMLtolkenizor(parent.name)]
@@ -220,22 +230,25 @@ for i, ij in enumerate(text_element):
     html_text_data_frame[i]["previous"] = previous
     html_text_data_frame[i]["re_tolkens"] = regexTokenizor(html_text_data_frame[i]["Data"])
 
-    # Manually building the dataset
-    print(html_text_data_frame[i]["Data"])
-    class_num = input("Enter class number")
-    if class_num == "exit":
-        break
-    try:
-        html_text_data_frame[i]["text_class"] = int(class_num)
-    except ValueError:
-        print("Not a valid class, assigning 0")
-        html_text_data_frame[i]["text_class"] = 0
-    # /Manually building the dataset
+    # # Manually building the dataset
+    # print(html_text_data_frame[i]["Data"])
+    # class_num = input("Enter class number")
+    # if class_num == "exit":
+    #     break
+    # try:
+    #     html_text_data_frame[i]["text_class"] = int(class_num)
+    # except ValueError:
+    #     print("Not a valid class, assigning 0")
+    #     html_text_data_frame[i]["text_class"] = 0
+    # # /Manually building the dataset
+
 # 
 
 # %% Store soup to disk
 sys.setrecursionlimit(10000)
-# pickle.dump( html_text_data_frame, open( "HTMLDATAFRAME_final.p", "wb" ) )
+
+# pickle.dump( html_text_data_frame, open( "HTMLDATAFRAME_final_with_raw.p", "wb" ) )
+
 with open("HTMLDATAFRAME_final.p", 'rb') as pickle_file:
     html_text_data_frame = pickle.load(pickle_file)
 print()
@@ -272,10 +285,10 @@ for i in html_text_data_frame:
     for j in html_text_data_frame[i]:
         # Omit placing vertain data in matrix describing text. Useful to find what matters most.
         # Data and text_class must occur in this list.
-        # skip_list = ["Data", "text_class" , "next", "previous", "parent_tags", "attribute_mask", "re_tolkens", "nested_structure", "name"]
-        skip_list = ["Data", "text_class"]
+        # skip_list = ["Data", "text_class" , "next", "previous", "parent_tags", "attribute_mask", "re_tolkens", "nested_structure", "name", "length"]
+        skip_list = ["Data", "text_class", "Data_base64"]
 
-        if [] != [True for i in skip_list if j in i]:
+        if [] != [True for i in skip_list if j == i]:
             continue
 
         if html_text_data_frame[i][j] is None:
@@ -311,7 +324,7 @@ Data_Y_categorical = to_categorical(Data_Y)
 print("Shape of Data_Y_categorical", Data_Y_categorical.shape)
 
 # %% Train and validation split
-split_value = int(Data_X.shape[0]*0.80)
+split_value = int(Data_X.shape[0]*0.6)
 # print(Data_X.shape)
 X_TRAIN         = Data_X[:split_value]
 X_VALIDATE      = Data_X[split_value::]
@@ -319,24 +332,31 @@ X_VALIDATE      = Data_X[split_value::]
 Y_TRAIN         = Data_Y_categorical[:split_value]
 Y_VALIDATE      = Data_Y_categorical[split_value::]
 
-# print(X_TRAIN.shape)
-# print(X_VALIDATE.shape)
-# print(Y_TRAIN.shape)
-# print(Y_VALIDATE.shape)
-
+print(X_TRAIN.shape)
+print(X_VALIDATE.shape)
+print(Y_TRAIN.shape)
+print(Y_VALIDATE.shape)
 # %% Build the learning machine
+# X_TRAIN = np.expand_dims(X_TRAIN,axis=1)
+# print(X_TRAIN.shape)
+
 model = models.Sequential()
-model.add(layers.LSTM(512, activation='elu', input_shape=(Data_X.shape[1], Data_X.shape[2])))
+model.add(layers.LSTM(1024, activation='elu', input_shape=(Data_X.shape[1], Data_X.shape[2]), return_sequences=False))
+model.add(layers.Dropout(0.4))
 
-model.add(layers.Dropout(0.2))
-model.add(layers.Dense(256, activation='elu'))
-model.add(layers.Dropout(0.2))
-model.add(layers.Dense(64, activation='elu'))
-model.add(layers.Dropout(0.2))
-model.add(layers.Dense(32, activation='elu'))
+# model.add(tf.keras.layers.Reshape((Data_X.shape[1], LSTM_neurons, 1)))
+# model.add(layers.Conv2D(64, (3,3), activation='elu'))
+# model.add(layers.Dropout(0.4))
 
-model.add(layers.Flatten())
-model.add(layers.Dense(16, activation='elu'))
+model.add(layers.Dense(512, activation='elu'))
+model.add(layers.Dropout(0.4))
+# model.add(layers.Dense(512, activation='elu'))
+# model.add(layers.Dropout(0.4))
+# model.add(layers.Dense(256, activation='elu'))
+# model.add(layers.Dropout(0.4))
+
+# model.add(layers.Flatten())
+# model.add(layers.Dense(16, activation='elu'))
 
 # Output layer with number of defined text classes
 model.add(layers.Dense(Data_Y_categorical.shape[1], activation='softmax'))
@@ -344,8 +364,12 @@ model.add(layers.Dense(Data_Y_categorical.shape[1], activation='softmax'))
 # Callback to prevent overtraining
 callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
 
+## Categorical is probably the way to go
+# model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
+
 # We use focal loss, likely to have highly imbalances dataset, try pruning out null entries, I like to assign them class 
 model.compile(loss=categorical_focal_loss(), optimizer="adam", metrics=['accuracy'])
+
 
 print(model.summary())
 # Train the machine
@@ -361,11 +385,7 @@ print(classification_report(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axi
 # VALIDATION MATRIX
 val_matrix = confusion_matrix(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
 print(val_matrix)
-
-# VALIDATION MATRIX
-
 matrix = confusion_matrix(TRAINING_fit.argmax(axis=1), Y_TRAIN.argmax(axis=1))
-
 print(matrix)
 
 ## Cleanup and pretty print
@@ -384,6 +404,51 @@ print(matrix)
 #         # time.sleep(10)
 # pp = pprint.PrettyPrinter(indent=5)
 # pp.pprint(html_text_data_frame)
+
+# %% Comparing to SVC
+
+# training a linear SVM classifier 
+from sklearn.svm import SVC
+
+Y_TRAIN_SVM = np.expand_dims(np.argmax(Y_TRAIN, axis=1),axis=1)
+X_TRAIN_SVM = np.reshape(X_TRAIN, (X_TRAIN.shape[0],X_TRAIN.shape[1]*X_TRAIN.shape[2]))
+# print(Y_TRAIN_SVM.shape)
+# print(X_TRAIN_SVM.shape)
+
+Y_VALIDATE_SVM = np.expand_dims(np.argmax(Y_VALIDATE, axis=1),axis=1)
+X_VALIDATE_SVM = np.reshape(X_VALIDATE, (X_VALIDATE.shape[0],X_VALIDATE.shape[1]*X_VALIDATE.shape[2]))
+# print(Y_VALIDATE_SVM.shape)
+# print(X_VALIDATE_SVM.shape)
+
+svm_model_linear = SVC(kernel = 'linear', C = 1).fit(X_TRAIN_SVM, Y_TRAIN_SVM)
+
+svm_predictions = svm_model_linear.predict(X_VALIDATE_SVM) 
+  
+# model accuracy for X_test   
+accuracy = svm_model_linear.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
+  
+# creating a confusion matrix 
+cm = confusion_matrix(Y_VALIDATE_SVM, svm_predictions)
+
+print(classification_report(Y_VALIDATE_SVM,svm_predictions))
+print(accuracy)
+print(cm)
+
+# %% K-NN
+# training a KNN classifier 
+from sklearn.neighbors import KNeighborsClassifier 
+knn = KNeighborsClassifier(n_neighbors = Data_Y_categorical.shape[1]).fit(X_TRAIN_SVM, Y_TRAIN_SVM) 
+  
+# accuracy on X_test 
+accuracy = knn.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
+  
+# creating a confusion matrix 
+knn_predictions = knn.predict(X_VALIDATE_SVM)  
+cm = confusion_matrix(Y_VALIDATE_SVM, knn_predictions)
+
+# Report
+print(classification_report(Y_VALIDATE_SVM,knn_predictions))
+
 
 # %% Next steps,
 # Process pages with model.predict(...) 

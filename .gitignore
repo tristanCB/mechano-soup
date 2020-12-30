@@ -4,4 +4,8 @@ __pycache__/
 mechanosoup_FULL.py
 /HTMLDATAFRAME_test.*
 /HTMLDATAFRAME_final.zip
+/HTMLDATAFRAME_final_with_raw.p
 cached/
+mechanosoupBASE64.py
+test.npy
+/.git
