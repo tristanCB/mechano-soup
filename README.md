@@ -13,13 +13,13 @@ Comparing two Machine learning architectures for use in classifying parsed HTML.
 
 **Figure 1.1:**
 
-![Image of results](./pictures/comparison.png)
+![Image of results](./pictures/comparison-CNN-LSTM.png)
 
 **Figure 2.1:** F1 macro scores for validation dataset using 7 by 22 matrix (all but the data appearing on the x axis). LSTM-CNN 0.91 > SVM 0.89 > KNN 0.74
 
 As we can see from the graph SVM was the best performing method.
 
-![Image of results 2](./pictures/comparison_1by22.png)
+![Image of results 2](./pictures/comparison_1by22-CNN-LSTM.png)
 
 **Figure 2.2:** F1 macro scores for validation dataset of 1 by 22 vector classifiers (Only the data appearing on the x axis). LSTM-CNN 0.51 ~ KNN 0.50 > SVM 0.42
 
