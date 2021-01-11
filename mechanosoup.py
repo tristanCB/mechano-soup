@@ -15,11 +15,13 @@ import ast
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 import time
+import funcy
 import datetime
 import re
 import json
 import requests
 import pickle
+from functools import wraps
 
 from selenium import webdriver
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
@@ -38,6 +40,7 @@ from keras.preprocessing import sequence
 from sklearn.metrics import classification_report, confusion_matrix
 
 from focal_loss import categorical_focal_loss
+
 # %%
 # Use headless option if you want to prevent browser from popping up during script's execution.
 options = Options()
@@ -60,6 +63,7 @@ driver.get(url)
 soup = BeautifulSoup(driver.page_source)
 
 # %% Build dataset from html doc
+
 def tag_visible(element):
     """
     https://stackoverflow.com/questions/1936466/beautifulsoup-grab-visible-webpage-text, (Jbochi, 2009)
@@ -246,9 +250,23 @@ for i, ij in enumerate(text_element):
 
 # %% Store soup to disk
 def run_a_train_eval_models(skip_list):
+
+    def benchmark_time(model, X, sample_size = 1000):
+        """
+        Custom function to time predict performance, works for TF models and SKLEARN ones,
+        I should consider using timeit to account for garbage collection and etc.
+        """
+        t = time.process_time()
+        for i in range(sample_size):
+            model.predict(X)
+        average_time_elapsed = (time.process_time() - t)/sample_size
+        return average_time_elapsed
+
     sys.setrecursionlimit(10000)
 
     # pickle.dump( html_text_data_frame, open( "HTMLDATAFRAME_final_with_raw.p", "wb" ) )
+
+
 
     with open("HTMLDATAFRAME_final.p", 'rb') as pickle_file:
         html_text_data_frame = pickle.load(pickle_file)
@@ -365,20 +383,30 @@ def run_a_train_eval_models(skip_list):
     # print(X_TRAIN.shape)
 
     model = models.Sequential()
-    LSTM_UNITS = 128
+    # LSTM_UNITS = 128
+    LSTM_UNITS = 64
+
     model.add(layers.LSTM(LSTM_UNITS, activation='elu', input_shape=(Data_X.shape[1], Data_X.shape[2]), return_sequences=True))
     model.add(tf.keras.layers.Reshape((Data_X.shape[1], LSTM_UNITS, 1)))
+    ## Matrix
     model.add(layers.Conv2D(32, (1,3), activation='elu'))
     model.add(layers.Conv2D(32, (3,1), activation='elu'))
     model.add(layers.Conv2D(16, (1,3), activation='elu'))
     model.add(layers.Conv2D(16, (3,1), activation='elu'))
     model.add(layers.Conv2D(8, (1,3), activation='elu'))
     model.add(layers.Conv2D(8, (3,1), activation='elu'))
+
+    # Only vector input
+    # model.add(layers.Conv2D(64, (1,3), activation='elu'))
+    # model.add(layers.Conv2D(32, (1,3), activation='elu'))
+    # model.add(layers.Conv2D(16, (1,3), activation='elu'))
+    # model.add(layers.Conv2D(8, (1,3), activation='elu'))
+    # model.add(layers.Conv2D(8, (1,3), activation='elu'))
     
     model.add(layers.Flatten())
-    model.add(layers.Dense(64, activation='elu'))
-    model.add(layers.Dense(32, activation='elu'))
-    model.add(layers.Dense(16, activation='elu'))
+    # model.add(layers.Dense(64, activation='elu'))
+    # model.add(layers.Dense(32, activation='elu'))
+    # model.add(layers.Dense(16, activation='elu'))
 
     # Output layer with number of defined text classes
     model.add(layers.Dense(Data_Y_categorical.shape[1], activation='softmax'))
@@ -395,11 +423,16 @@ def run_a_train_eval_models(skip_list):
 
     print(model.summary())
     # Train the machine
-    model.fit(X_TRAIN, Y_TRAIN, epochs=20, batch_size=64, callbacks=[callback])
+    model.fit(X_TRAIN, Y_TRAIN, epochs=50, batch_size=64, callbacks=[callback])
 
     ## %% Final evaluation of the model
     scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
+    # Time it
+
+
     VALIDATION_fit = model.predict(X_VALIDATE)
+    LSTM_infer_time = benchmark_time(model,X_VALIDATE)
+
     TRAINING_fit = model.predict(X_TRAIN)
     # print("Accuracy: %.2f%%" % (scores[1]*100))
     LSTM_classification_report = classification_report(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
@@ -446,6 +479,8 @@ def run_a_train_eval_models(skip_list):
 
     svm_predictions = svm_model_linear.predict(X_VALIDATE_SVM) 
     
+    SVM_infer_time = benchmark_time(svm_model_linear,X_VALIDATE_SVM)
+    
     # model accuracy for X_test   
     accuracy = svm_model_linear.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
     
@@ -465,7 +500,9 @@ def run_a_train_eval_models(skip_list):
     accuracy = knn.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
     
     # creating a confusion matrix 
-    knn_predictions = knn.predict(X_VALIDATE_SVM)  
+    knn_predictions = knn.predict(X_VALIDATE_SVM)
+    KNN_infer_time = benchmark_time(knn, X_VALIDATE_SVM)
+
     cm = confusion_matrix(Y_VALIDATE_SVM, knn_predictions)
     print(cm)
     # Report
@@ -474,7 +511,9 @@ def run_a_train_eval_models(skip_list):
     
     def get_macro_avg(classification_report):
         return classification_report.split('macro avg')[1].split("      ")[3]
-    return [get_macro_avg(i) for i in [LSTM_classification_report,SVM_classification_report,KNN_classification_report]]
+
+    processing_time = [LSTM_infer_time, SVM_infer_time, KNN_infer_time]
+    return [get_macro_avg(i) for i in [LSTM_classification_report,SVM_classification_report,KNN_classification_report]], processing_time
   
   
     # html_text_data_frame[i]["length"] = [len(ij)]
@@ -491,22 +530,32 @@ skip_list = ["length","parent_tags","name","nested_structure","attribute_mask","
 
 import csv
 
-with open('full_matrix_3.csv', 'w', newline='') as csvfile:
-    fieldnames = ['TAG', 'LSTM', 'SVM', 'KNN']
+with open('full_matrix_5.csv', 'w', newline='') as csvfile:
+    fieldnames = ['TAG', 'LSTM', 'SVM', 'KNN', 'LSTM_time', 'SVM_time', 'KNN_time']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
     for i in skip_list:
-        for k in range(8):
+        for k in range(1):
             ignore_skip_list = ["Data", "text_class", "Data_base64"]
             # ignore_skip_list += skip_list
             # ignore_skip_list.pop(ignore_skip_list.index(i))
-            ignore_skip_list.append(i)
+            # ignore_skip_list.append(i)
             print(ignore_skip_list)
-            classification_smacro_avgs = run_a_train_eval_models(ignore_skip_list)
+            classification_smacro_avgs, processing_time = run_a_train_eval_models(ignore_skip_list)
             print(classification_smacro_avgs)
-            writer.writerow({'TAG': i, 'LSTM': classification_smacro_avgs[0], 'SVM': classification_smacro_avgs[1],'KNN': classification_smacro_avgs[2]})
+            writer.writerow({
+                                'TAG': k, 
+                                'LSTM': classification_smacro_avgs[0], 
+                                'SVM': classification_smacro_avgs[1],
+                                'KNN': classification_smacro_avgs[2],
+                                'LSTM_time': processing_time[0], 
+                                'SVM_time': processing_time[1],
+                                'KNN_time': processing_time[2],
 
+                            })
 
+import os
+os.system('shutdown -s')
 
 
 # %% Next steps,
