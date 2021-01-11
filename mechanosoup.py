@@ -245,209 +245,268 @@ for i, ij in enumerate(text_element):
 # 
 
 # %% Store soup to disk
-sys.setrecursionlimit(10000)
+def run_a_train_eval_models(skip_list):
+    sys.setrecursionlimit(10000)
 
-# pickle.dump( html_text_data_frame, open( "HTMLDATAFRAME_final_with_raw.p", "wb" ) )
+    # pickle.dump( html_text_data_frame, open( "HTMLDATAFRAME_final_with_raw.p", "wb" ) )
 
-with open("HTMLDATAFRAME_final.p", 'rb') as pickle_file:
-    html_text_data_frame = pickle.load(pickle_file)
-print()
+    with open("HTMLDATAFRAME_final.p", 'rb') as pickle_file:
+        html_text_data_frame = pickle.load(pickle_file)
+    print()
 
-# %% Prune soup
-import random
-amount_of_null = 0
-candidate_for_deletion = []
-## Check data distribution. and prune off some of the null data...
-for i in html_text_data_frame:
-    # We will
-    if html_text_data_frame[i]["text_class"] == 0:
-        if random.randrange(10) > 2:
-            candidate_for_deletion.append(i)
-            continue
-        amount_of_null += 1
+    # %% Prune soup
+    import random
+    amount_of_null = 0
+    candidate_for_deletion = []
+    ## Check data distribution. and prune off some of the null data...
+    for i in html_text_data_frame:
+        # We will
+        if html_text_data_frame[i]["text_class"] == 0:
+            if random.randrange(10) > 2:
+                candidate_for_deletion.append(i)
+                continue
+            amount_of_null += 1
 
-# Do the deletion randomly
-for i in candidate_for_deletion:
-    del html_text_data_frame[i]
-print(amount_of_null)
+    # Do the deletion randomly
+    for i in candidate_for_deletion:
+        del html_text_data_frame[i]
+    print(amount_of_null)
 
-# %% Construct dataset
-import numpy as np
-import tensorflow as tf
-from keras.utils import to_categorical
-Data_X = None
-# The representation of the text element we are trying to extract will be based off of the following
-max_len = 22
-data_vectors = 8
+    ## %% Construct dataset
+    import numpy as np
+    import tensorflow as tf
+    from keras.utils import to_categorical
+    Data_X = None
+    # The representation of the text element we are trying to extract will be based off of the following
+    max_len = 22
+    data_vectors = 8
 
-for i in html_text_data_frame:
-    X = []
-    for j in html_text_data_frame[i]:
-        # Omit placing vertain data in matrix describing text. Useful to find what matters most.
-        # Data and text_class must occur in this list.
-        # skip_list = ["Data", "text_class" , "next", "previous", "parent_tags", "attribute_mask", "re_tolkens", "nested_structure", "name", "length"]
-        skip_list = ["Data", "text_class", "Data_base64"]
+    for i in html_text_data_frame:
+        X = []
+        for j in html_text_data_frame[i]:
+            # Omit placing vertain data in matrix describing text. Useful to find what matters most.
+            # Data and text_class must occur in this list.
+            # skip_list = ["Data", "text_class" ,"Data_base64", "next", "previous", "attribute_mask", "re_tolkens", "nested_structure", "name", "length"]
+            # skip_list = ["Data", "text_class", "Data_base64"]
 
-        if [] != [True for i in skip_list if j == i]:
-            continue
 
-        if html_text_data_frame[i][j] is None:
-            # print("skipped")
-            x.append([0 for i in range(max_len)])
-            continue
-        while len(html_text_data_frame[i][j]) < max_len:
-            html_text_data_frame[i][j].append(0)
-        X.append(html_text_data_frame[i][j])
+            if [] != [True for i in skip_list if j == i]:
+                continue
 
-    X = np.expand_dims(np.asarray(X),axis=0)
+            if html_text_data_frame[i][j] is None:
+                # print("skipped")
+                x.append([0 for i in range(max_len)])
+                continue
+            while len(html_text_data_frame[i][j]) < max_len:
+                html_text_data_frame[i][j].append(0)
+            X.append(html_text_data_frame[i][j])
 
-    # Fixes an issue where all are None 
-    if X == []:
-        X = np.zeros((data_vectors,max_len))
-    ## Format for CNN channels last
-    # X = np.expand_dims(X, axis=-1)
-    
-    # Stacks or creates np array
-    if Data_X is None:
-        Data_X = X
-    else:
-        Data_X = np.vstack((Data_X,X))
+        X = np.expand_dims(np.asarray(X),axis=0)
+
+        # Fixes an issue where all are None 
+        if X == []:
+            X = np.zeros((data_vectors,max_len))
+        ## Format for CNN channels last
+        # X = np.expand_dims(X, axis=-1)
         
+        # Stacks or creates np array
+        if Data_X is None:
+            Data_X = X
+        else:
+            Data_X = np.vstack((Data_X,X))
+            
 
-print("Shape of Data_X", Data_X.shape)
-# Data_X_classifier = Data_X.reshape((Data_X.shape[0],Data_X.shape[1]*Data_X.shape[2]))
-# print("Shape of Data_X_classifier", Data_X_classifier.shape)
+    print("Shape of Data_X", Data_X.shape)
+    # Data_X_classifier = Data_X.reshape((Data_X.shape[0],Data_X.shape[1]*Data_X.shape[2]))
+    # print("Shape of Data_X_classifier", Data_X_classifier.shape)
 
-# Get text class
-Data_Y = [int(html_text_data_frame[i]["text_class"]) for i in html_text_data_frame]
-Data_Y_categorical = to_categorical(Data_Y)
-print("Shape of Data_Y_categorical", Data_Y_categorical.shape)
+    # Get text class
+    Data_Y = [int(html_text_data_frame[i]["text_class"]) for i in html_text_data_frame]
+    Data_Y_categorical = to_categorical(Data_Y)
+    print("Shape of Data_Y_categorical", Data_Y_categorical.shape)
 
-# %% Train and validation split
-split_value = int(Data_X.shape[0]*0.6)
-# print(Data_X.shape)
-X_TRAIN         = Data_X[:split_value]
-X_VALIDATE      = Data_X[split_value::]
+    # ## %% Train and validation split 
+    # split_value = int(Data_X.shape[0]*0.6)
+    # # print(Data_X.shape)
+    # X_TRAIN         = Data_X[:split_value]
+    # X_VALIDATE      = Data_X[split_value::]
 
-Y_TRAIN         = Data_Y_categorical[:split_value]
-Y_VALIDATE      = Data_Y_categorical[split_value::]
+    # Y_TRAIN         = Data_Y_categorical[:split_value]
+    # Y_VALIDATE      = Data_Y_categorical[split_value::]
 
-print(X_TRAIN.shape)
-print(X_VALIDATE.shape)
-print(Y_TRAIN.shape)
-print(Y_VALIDATE.shape)
-# %% Build the learning machine
-# X_TRAIN = np.expand_dims(X_TRAIN,axis=1)
-# print(X_TRAIN.shape)
+    ## %% Train and validation split random
+    X_TRAIN         = []
+    X_VALIDATE      = []
 
-model = models.Sequential()
-model.add(layers.LSTM(1024, activation='elu', input_shape=(Data_X.shape[1], Data_X.shape[2]), return_sequences=False))
-model.add(layers.Dropout(0.4))
+    Y_TRAIN         = []
+    Y_VALIDATE      = []
 
-# model.add(tf.keras.layers.Reshape((Data_X.shape[1], LSTM_neurons, 1)))
-# model.add(layers.Conv2D(64, (3,3), activation='elu'))
-# model.add(layers.Dropout(0.4))
+    split_VALDATION_ODDS = 0.25
+    for i in range(len(Data_X)):
+        if random.random() > split_VALDATION_ODDS:
+            X_TRAIN.append(Data_X[i])
+            Y_TRAIN.append(Data_Y_categorical[i])
+        else:
+            X_VALIDATE.append(Data_X[i])
+            Y_VALIDATE.append(Data_Y_categorical[i])
+    
+    X_TRAIN         = np.asarray(X_TRAIN)
+    X_VALIDATE      = np.asarray(X_VALIDATE)
 
-model.add(layers.Dense(512, activation='elu'))
-model.add(layers.Dropout(0.4))
-# model.add(layers.Dense(512, activation='elu'))
-# model.add(layers.Dropout(0.4))
-# model.add(layers.Dense(256, activation='elu'))
-# model.add(layers.Dropout(0.4))
+    Y_TRAIN         = np.asarray(Y_TRAIN)
+    Y_VALIDATE      = np.asarray(Y_VALIDATE)
 
-# model.add(layers.Flatten())
-# model.add(layers.Dense(16, activation='elu'))
+    print(X_TRAIN.shape)
+    print(X_VALIDATE.shape)
+    print(Y_TRAIN.shape)
+    print(Y_VALIDATE.shape)
+    ## %% Build the learning machine
+    # X_TRAIN = np.expand_dims(X_TRAIN,axis=1)
+    # print(X_TRAIN.shape)
 
-# Output layer with number of defined text classes
-model.add(layers.Dense(Data_Y_categorical.shape[1], activation='softmax'))
+    model = models.Sequential()
+    LSTM_UNITS = 128
+    model.add(layers.LSTM(LSTM_UNITS, activation='elu', input_shape=(Data_X.shape[1], Data_X.shape[2]), return_sequences=True))
+    model.add(tf.keras.layers.Reshape((Data_X.shape[1], LSTM_UNITS, 1)))
+    model.add(layers.Conv2D(32, (1,3), activation='elu'))
+    model.add(layers.Conv2D(32, (3,1), activation='elu'))
+    model.add(layers.Conv2D(16, (1,3), activation='elu'))
+    model.add(layers.Conv2D(16, (3,1), activation='elu'))
+    model.add(layers.Conv2D(8, (1,3), activation='elu'))
+    model.add(layers.Conv2D(8, (3,1), activation='elu'))
+    
+    model.add(layers.Flatten())
+    model.add(layers.Dense(64, activation='elu'))
+    model.add(layers.Dense(32, activation='elu'))
+    model.add(layers.Dense(16, activation='elu'))
 
-# Callback to prevent overtraining
-callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+    # Output layer with number of defined text classes
+    model.add(layers.Dense(Data_Y_categorical.shape[1], activation='softmax'))
 
-## Categorical is probably the way to go
-# model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
+    # Callback to prevent overtraining
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
 
-# We use focal loss, likely to have highly imbalances dataset, try pruning out null entries, I like to assign them class 
-model.compile(loss=categorical_focal_loss(), optimizer="adam", metrics=['accuracy'])
+    ## Categorical is probably the way to go
+    # model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
+
+    # We use focal loss, likely to have highly imbalances dataset, try pruning out null entries, I like to assign them class 
+    model.compile(loss=categorical_focal_loss(), optimizer="adam", metrics=['accuracy'])
 
 
-print(model.summary())
-# Train the machine
-model.fit(X_TRAIN, Y_TRAIN, epochs=200, batch_size=64, validation_split= 0.1, callbacks=[callback])
+    print(model.summary())
+    # Train the machine
+    model.fit(X_TRAIN, Y_TRAIN, epochs=20, batch_size=64, callbacks=[callback])
 
-# %% Final evaluation of the model
-scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
-VALIDATION_fit = model.predict(X_VALIDATE)
-TRAINING_fit = model.predict(X_TRAIN)
-# print("Accuracy: %.2f%%" % (scores[1]*100))
-print(classification_report(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1)))
+    ## %% Final evaluation of the model
+    scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
+    VALIDATION_fit = model.predict(X_VALIDATE)
+    TRAINING_fit = model.predict(X_TRAIN)
+    # print("Accuracy: %.2f%%" % (scores[1]*100))
+    LSTM_classification_report = classification_report(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
 
-# VALIDATION MATRIX
-val_matrix = confusion_matrix(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
-print(val_matrix)
-matrix = confusion_matrix(TRAINING_fit.argmax(axis=1), Y_TRAIN.argmax(axis=1))
-print(matrix)
+    # VALIDATION MATRIX
+    val_matrix = confusion_matrix(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
+    print(val_matrix)
+    # matrix = confusion_matrix(TRAINING_fit.argmax(axis=1), Y_TRAIN.argmax(axis=1))
+    # print(matrix)
 
-## Cleanup and pretty print
-# import pprint
-# for i in html_text_data_frame:
-#     for j in ['length','parent_tags','name','nested_structure','attribute_mask','next','previous','re_tolkens']:
-#         try:
-#             del html_text_data_frame[i][j]
-#         except KeyError:
-#             pass
-## /Cleanup and pretty print
-## For debugging purposes
-# for i in html_text_data_frame:
-#     if html_text_data_frame[i]['text_class'] == 5:
-#         print(html_text_data_frame[i]['Data'])
-#         # time.sleep(10)
-# pp = pprint.PrettyPrinter(indent=5)
-# pp.pprint(html_text_data_frame)
+    ## Cleanup and pretty print
+    # import pprint
+    # for i in html_text_data_frame:
+    #     for j in ['length','parent_tags','name','nested_structure','attribute_mask','next','previous','re_tolkens']:
+    #         try:
+    #             del html_text_data_frame[i][j]
+    #         except KeyError:
+    #             pass
+    ## /Cleanup and pretty print
+    ## For debugging purposes
+    # for i in html_text_data_frame:
+    #     if html_text_data_frame[i]['text_class'] == 5:
+    #         print(html_text_data_frame[i]['Data'])
+    #         # time.sleep(10)
+    # pp = pprint.PrettyPrinter(indent=5)
+    # pp.pprint(html_text_data_frame)
 
-# %% Comparing to SVC
+    ## %% Comparing to SVC
 
-# training a linear SVM classifier 
-from sklearn.svm import SVC
+    # training a linear SVM classifier 
+    from sklearn.svm import SVC
 
-Y_TRAIN_SVM = np.expand_dims(np.argmax(Y_TRAIN, axis=1),axis=1)
-X_TRAIN_SVM = np.reshape(X_TRAIN, (X_TRAIN.shape[0],X_TRAIN.shape[1]*X_TRAIN.shape[2]))
-# print(Y_TRAIN_SVM.shape)
-# print(X_TRAIN_SVM.shape)
+    Y_TRAIN_SVM = np.expand_dims(np.argmax(Y_TRAIN, axis=1),axis=1)
+    X_TRAIN_SVM = np.reshape(X_TRAIN, (X_TRAIN.shape[0],X_TRAIN.shape[1]*X_TRAIN.shape[2]))
+    # print(Y_TRAIN_SVM.shape)
+    # print(X_TRAIN_SVM.shape)
 
-Y_VALIDATE_SVM = np.expand_dims(np.argmax(Y_VALIDATE, axis=1),axis=1)
-X_VALIDATE_SVM = np.reshape(X_VALIDATE, (X_VALIDATE.shape[0],X_VALIDATE.shape[1]*X_VALIDATE.shape[2]))
-# print(Y_VALIDATE_SVM.shape)
-# print(X_VALIDATE_SVM.shape)
+    Y_VALIDATE_SVM = np.expand_dims(np.argmax(Y_VALIDATE, axis=1),axis=1)
+    X_VALIDATE_SVM = np.reshape(X_VALIDATE, (X_VALIDATE.shape[0],X_VALIDATE.shape[1]*X_VALIDATE.shape[2]))
+    # print(Y_VALIDATE_SVM.shape)
+    # print(X_VALIDATE_SVM.shape)
 
-svm_model_linear = SVC(kernel = 'linear', C = 1).fit(X_TRAIN_SVM, Y_TRAIN_SVM)
+    svm_model_linear = SVC(kernel = 'linear', C = 1).fit(X_TRAIN_SVM, Y_TRAIN_SVM)
 
-svm_predictions = svm_model_linear.predict(X_VALIDATE_SVM) 
+    svm_predictions = svm_model_linear.predict(X_VALIDATE_SVM) 
+    
+    # model accuracy for X_test   
+    accuracy = svm_model_linear.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
+    
+    # creating a confusion matrix 
+    cm = confusion_matrix(Y_VALIDATE_SVM, svm_predictions)
+
+    SVM_classification_report = classification_report(Y_VALIDATE_SVM,svm_predictions)
+    # print(accuracy)
+    print(cm)
+
+    ## %% K-NN
+    # training a KNN classifier 
+    from sklearn.neighbors import KNeighborsClassifier 
+    knn = KNeighborsClassifier(n_neighbors = Data_Y_categorical.shape[1]).fit(X_TRAIN_SVM, Y_TRAIN_SVM) 
+    
+    # accuracy on X_test 
+    accuracy = knn.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
+    
+    # creating a confusion matrix 
+    knn_predictions = knn.predict(X_VALIDATE_SVM)  
+    cm = confusion_matrix(Y_VALIDATE_SVM, knn_predictions)
+    print(cm)
+    # Report
+    KNN_classification_report = classification_report(Y_VALIDATE_SVM,knn_predictions)
+    
+    
+    def get_macro_avg(classification_report):
+        return classification_report.split('macro avg')[1].split("      ")[3]
+    return [get_macro_avg(i) for i in [LSTM_classification_report,SVM_classification_report,KNN_classification_report]]
   
-# model accuracy for X_test   
-accuracy = svm_model_linear.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
   
-# creating a confusion matrix 
-cm = confusion_matrix(Y_VALIDATE_SVM, svm_predictions)
+    # html_text_data_frame[i]["length"] = [len(ij)]
+    # html_text_data_frame[i]["parent_tags"] = [len(parent)]
+    # html_text_data_frame[i]["name"] = [HTMLtolkenizor(parent.name)]
+    # html_text_data_frame[i]["nested_structure"] = nested_structure
+    # html_text_data_frame[i]["attribute_mask"] = attribute_mask
+    # html_text_data_frame[i]["next"] = next
+    # html_text_data_frame[i]["previous"] = previous
+    # html_text_data_frame[i]["re_tolkens"] = regexTokenizor(html_text_data_frame[i]["Data"])
 
-print(classification_report(Y_VALIDATE_SVM,svm_predictions))
-print(accuracy)
-print(cm)
 
-# %% K-NN
-# training a KNN classifier 
-from sklearn.neighbors import KNeighborsClassifier 
-knn = KNeighborsClassifier(n_neighbors = Data_Y_categorical.shape[1]).fit(X_TRAIN_SVM, Y_TRAIN_SVM) 
-  
-# accuracy on X_test 
-accuracy = knn.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
-  
-# creating a confusion matrix 
-knn_predictions = knn.predict(X_VALIDATE_SVM)  
-cm = confusion_matrix(Y_VALIDATE_SVM, knn_predictions)
+skip_list = ["length","parent_tags","name","nested_structure","attribute_mask","next","previous", "re_tolkens"]
 
-# Report
-print(classification_report(Y_VALIDATE_SVM,knn_predictions))
+import csv
+
+with open('full_matrix_3.csv', 'w', newline='') as csvfile:
+    fieldnames = ['TAG', 'LSTM', 'SVM', 'KNN']
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    writer.writeheader()
+    for i in skip_list:
+        for k in range(8):
+            ignore_skip_list = ["Data", "text_class", "Data_base64"]
+            # ignore_skip_list += skip_list
+            # ignore_skip_list.pop(ignore_skip_list.index(i))
+            ignore_skip_list.append(i)
+            print(ignore_skip_list)
+            classification_smacro_avgs = run_a_train_eval_models(ignore_skip_list)
+            print(classification_smacro_avgs)
+            writer.writerow({'TAG': i, 'LSTM': classification_smacro_avgs[0], 'SVM': classification_smacro_avgs[1],'KNN': classification_smacro_avgs[2]})
+
+
 
 
 # %% Next steps,

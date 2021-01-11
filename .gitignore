@@ -9,3 +9,6 @@ cached/
 mechanosoupBASE64.py
 test.npy
 /.git
+
+*.csv
+*.sav
