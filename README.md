@@ -20,9 +20,17 @@ Different classifiers were trained to on parsed text data. A machine learning (L
 
 ![Image of results](./pictures/data_relevance.png)
 
-**Figure 1.2:** Execution speed of classifier performing a prediction based on 100 executions
+**Figure 1.3:** Assessing the relevance of the data by looking at vector input to train classifiers.
+
+![Image of results](./pictures/vector_performance.png.png)
+
+**Figure 1.4:** Execution speed of classifier performing a prediction based on 100 executions
 
 ![Image of results](./pictures/execution_speed.png)
+
+<!-- **Figure 1.5:** Significant performance upgrade? -->
+
+![Image of results](./pictures/model_subsets.png)
 
 <!-- ![Image of results](./pictures/comparison-CNN-LSTM.png)
 
@@ -33,7 +41,7 @@ Different classifiers were trained to on parsed text data. A machine learning (L
 **Figure 2.2:** F1 macro scores for validation dataset of 1 by 22 vector classifiers (Only the data appearing on the x axis). LSTM-CNN 0.51 ~ KNN 0.50 > SVM 0.42. -->
 
 # Discussion
-The custom LSTM-CNN network investigated performed better than other investigated classifiers. The execution speed was many orders of magnitude higher as seen in Figure 1.2. To note even when sample amount are in the hundreds performant classifiers can be trained using the latest machine learning techniques.
+The custom LSTM-CNN network investigated performed better than other investigated classifiers. The execution speed was many orders of magnitude higher as seen in Figure 1.4. Even when sample amount are in the hundreds, performant classifiers can be trained using the latest machine learning techniques.
 
 In the case when a single vector is used, the LSTM-CNN network performs much betters for the previous and next vectors.
 <!-- # LSTM-CNN architecture -->
