@@ -22,7 +22,7 @@ Different classifiers were trained to on parsed text data. A machine learning (L
 
 **Figure 1.3:** Assessing the relevance of the data by looking at vector input to train classifiers.
 
-![Image of results](./pictures/vector_performance.png.png)
+![Image of results](./pictures/vector_performance.png)
 
 **Figure 1.4:** Execution speed of classifier performing a prediction based on 100 executions
 
