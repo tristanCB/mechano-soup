@@ -251,7 +251,10 @@ for i, ij in enumerate(text_element):
 # %% Store soup to disk
 def run_a_train_eval_models(skip_list):
 
-    def benchmark_time(model, X, sample_size = 1000):
+    def get_macro_avg(classification_report):
+        return classification_report.split('macro avg')[1].split("      ")[3]
+
+    def benchmark_time(model, X, sample_size = 1):
         """
         Custom function to time predict performance, works for TF models and SKLEARN ones,
         I should consider using timeit to account for garbage collection and etc.
@@ -388,20 +391,30 @@ def run_a_train_eval_models(skip_list):
 
     model.add(layers.LSTM(LSTM_UNITS, activation='elu', input_shape=(Data_X.shape[1], Data_X.shape[2]), return_sequences=True))
     model.add(tf.keras.layers.Reshape((Data_X.shape[1], LSTM_UNITS, 1)))
-    ## Matrix
-    model.add(layers.Conv2D(32, (1,3), activation='elu'))
-    model.add(layers.Conv2D(32, (3,1), activation='elu'))
-    model.add(layers.Conv2D(16, (1,3), activation='elu'))
-    model.add(layers.Conv2D(16, (3,1), activation='elu'))
-    model.add(layers.Conv2D(8, (1,3), activation='elu'))
-    model.add(layers.Conv2D(8, (3,1), activation='elu'))
 
-    # Only vector input
-    # model.add(layers.Conv2D(64, (1,3), activation='elu'))
-    # model.add(layers.Conv2D(32, (1,3), activation='elu'))
-    # model.add(layers.Conv2D(16, (1,3), activation='elu'))
-    # model.add(layers.Conv2D(8, (1,3), activation='elu'))
-    # model.add(layers.Conv2D(8, (1,3), activation='elu'))
+    # def add_conv_block(units):
+    #     model.add(layers.Conv2D(units, (1,3), activation='elu'))
+    #     model.add(layers.Conv2D(units, (3,1), activation='elu'))
+    #     model.add(layers.Conv2D(units, (1,3), activation='elu'))
+    #     model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
+    #     model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
+    #     # model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
+    #     # model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
+    # add_conv_block(64)
+    # add_conv_block(32)
+
+    def add_conv_block(units):
+        model.add(layers.Conv2D(units, (1,3), activation='elu'))
+        model.add(layers.Conv2D(units, (1,3), activation='elu'))
+        model.add(layers.Conv2D(units, (1,3), activation='elu'))
+        # model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
+        # model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
+        # model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
+        # model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
+    add_conv_block(64)
+    add_conv_block(32)
+
+
     
     model.add(layers.Flatten())
     # model.add(layers.Dense(64, activation='elu'))
@@ -411,19 +424,16 @@ def run_a_train_eval_models(skip_list):
     # Output layer with number of defined text classes
     model.add(layers.Dense(Data_Y_categorical.shape[1], activation='softmax'))
 
-    # Callback to prevent overtraining
-    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
-
     ## Categorical is probably the way to go
     # model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
-
     # We use focal loss, likely to have highly imbalances dataset, try pruning out null entries, I like to assign them class 
     model.compile(loss=categorical_focal_loss(), optimizer="adam", metrics=['accuracy'])
 
-
     print(model.summary())
+    # Callback to prevent overtraining
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
     # Train the machine
-    model.fit(X_TRAIN, Y_TRAIN, epochs=50, batch_size=64, callbacks=[callback])
+    model.fit(X_TRAIN, Y_TRAIN, epochs=15, batch_size=64, callbacks=[callback])
 
     ## %% Final evaluation of the model
     scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
@@ -440,6 +450,10 @@ def run_a_train_eval_models(skip_list):
     # VALIDATION MATRIX
     val_matrix = confusion_matrix(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
     print(val_matrix)
+
+    classifier_results = {}
+    classifier_results["LSTM_CNN"] = {"macro_avg":get_macro_avg(LSTM_classification_report), "speed":LSTM_infer_time}
+
     # matrix = confusion_matrix(TRAINING_fit.argmax(axis=1), Y_TRAIN.argmax(axis=1))
     # print(matrix)
 
@@ -460,102 +474,123 @@ def run_a_train_eval_models(skip_list):
     # pp = pprint.PrettyPrinter(indent=5)
     # pp.pprint(html_text_data_frame)
 
-    ## %% Comparing to SVC
-
-    # training a linear SVM classifier 
+    # %%
+    from sklearn.neural_network import MLPClassifier
+    from sklearn.neighbors import KNeighborsClassifier
     from sklearn.svm import SVC
-
-    Y_TRAIN_SVM = np.expand_dims(np.argmax(Y_TRAIN, axis=1),axis=1)
-    X_TRAIN_SVM = np.reshape(X_TRAIN, (X_TRAIN.shape[0],X_TRAIN.shape[1]*X_TRAIN.shape[2]))
+    from sklearn.gaussian_process import GaussianProcessClassifier
+    from sklearn.gaussian_process.kernels import RBF
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+    from sklearn.naive_bayes import GaussianNB
+    from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+    
+    Y_TRAIN_SKLEARN = np.expand_dims(np.argmax(Y_TRAIN, axis=1),axis=1)
+    X_TRAIN_SKLEARN  = np.reshape(X_TRAIN, (X_TRAIN.shape[0],X_TRAIN.shape[1]*X_TRAIN.shape[2]))
     # print(Y_TRAIN_SVM.shape)
     # print(X_TRAIN_SVM.shape)
 
-    Y_VALIDATE_SVM = np.expand_dims(np.argmax(Y_VALIDATE, axis=1),axis=1)
-    X_VALIDATE_SVM = np.reshape(X_VALIDATE, (X_VALIDATE.shape[0],X_VALIDATE.shape[1]*X_VALIDATE.shape[2]))
+    Y_VALIDATE_SKLEARN  = np.expand_dims(np.argmax(Y_VALIDATE, axis=1),axis=1)
+    X_VALIDATE_SKLEARN  = np.reshape(X_VALIDATE, (X_VALIDATE.shape[0],X_VALIDATE.shape[1]*X_VALIDATE.shape[2]))
     # print(Y_VALIDATE_SVM.shape)
     # print(X_VALIDATE_SVM.shape)
 
-    svm_model_linear = SVC(kernel = 'linear', C = 1).fit(X_TRAIN_SVM, Y_TRAIN_SVM)
+    classifiers = [
+        GaussianProcessClassifier(1.0 * RBF(1.0)),
+        DecisionTreeClassifier(max_depth=5),
+        RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+        MLPClassifier(alpha=1, max_iter=1000),
+        AdaBoostClassifier(),
+        GaussianNB(),
+        QuadraticDiscriminantAnalysis(),
+        SVC(kernel = 'linear', C = 1),
+        KNeighborsClassifier(n_neighbors = Data_Y_categorical.shape[1]).fit(X_TRAIN_SKLEARN, Y_TRAIN_SKLEARN),
+    ]
 
-    svm_predictions = svm_model_linear.predict(X_VALIDATE_SVM) 
+    ## I should test em all out!
+    def eval_classifiers(X = X_TRAIN_SKLEARN, Y = Y_TRAIN_SKLEARN, X_val = X_VALIDATE_SKLEARN, Y_val = Y_VALIDATE_SKLEARN):
+        for i in classifiers:
+            model = i.fit(X, Y)
+            execution_speed = benchmark_time(model, X, sample_size = 1)/len(X)
+            # creating a confusion matrix 
+            predictions = model.predict(X_val)
+            cm = confusion_matrix(Y_val, predictions)
+            print(cm)
+            # Report
+            report = classification_report(Y_val, predictions)
+            print(report)
+            print(i)
+            classifier_results[str(i).strip('()')] = {"macro_avg":get_macro_avg(report), "speed":execution_speed}
     
-    SVM_infer_time = benchmark_time(svm_model_linear,X_VALIDATE_SVM)
-    
-    # model accuracy for X_test   
-    accuracy = svm_model_linear.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
-    
-    # creating a confusion matrix 
-    cm = confusion_matrix(Y_VALIDATE_SVM, svm_predictions)
-
-    SVM_classification_report = classification_report(Y_VALIDATE_SVM,svm_predictions)
-    # print(accuracy)
-    print(cm)
-
-    ## %% K-NN
-    # training a KNN classifier 
-    from sklearn.neighbors import KNeighborsClassifier 
-    knn = KNeighborsClassifier(n_neighbors = Data_Y_categorical.shape[1]).fit(X_TRAIN_SVM, Y_TRAIN_SVM) 
-    
-    # accuracy on X_test 
-    accuracy = knn.score(X_VALIDATE_SVM, Y_VALIDATE_SVM) 
-    
-    # creating a confusion matrix 
-    knn_predictions = knn.predict(X_VALIDATE_SVM)
-    KNN_infer_time = benchmark_time(knn, X_VALIDATE_SVM)
-
-    cm = confusion_matrix(Y_VALIDATE_SVM, knn_predictions)
-    print(cm)
-    # Report
-    KNN_classification_report = classification_report(Y_VALIDATE_SVM,knn_predictions)
-    
-    
-    def get_macro_avg(classification_report):
-        return classification_report.split('macro avg')[1].split("      ")[3]
-
-    processing_time = [LSTM_infer_time, SVM_infer_time, KNN_infer_time]
-    return [get_macro_avg(i) for i in [LSTM_classification_report,SVM_classification_report,KNN_classification_report]], processing_time
-  
-  
-    # html_text_data_frame[i]["length"] = [len(ij)]
-    # html_text_data_frame[i]["parent_tags"] = [len(parent)]
-    # html_text_data_frame[i]["name"] = [HTMLtolkenizor(parent.name)]
-    # html_text_data_frame[i]["nested_structure"] = nested_structure
-    # html_text_data_frame[i]["attribute_mask"] = attribute_mask
-    # html_text_data_frame[i]["next"] = next
-    # html_text_data_frame[i]["previous"] = previous
-    # html_text_data_frame[i]["re_tolkens"] = regexTokenizor(html_text_data_frame[i]["Data"])
-
+    eval_classifiers()
+    print(classifier_results)
+    return classifier_results
 
 skip_list = ["length","parent_tags","name","nested_structure","attribute_mask","next","previous", "re_tolkens"]
 
 import csv
+# %%
+with open('full_matrix_10.csv', 'w', newline='') as csvfile:
+    # fieldnames = [
+    #     'DATA', 'LSTM_CNN', 'LSTM_CNN_speed', 'SVC_linear', 
+    #     'SVC_linear_speed', 'KNN', 'KNN_speed', 'GaussianProcessClassifier',
+    #     'GaussianProcessClassifier_speed', 'DecisionTreeClassifier', 'DecisionTreeClassifier_speed', 
+    #     'RandomForestClassifier', 'RandomForestClassifier_speed', 'AdaBoostClassifier', 'AdaBoostClassifier_speed',
+    #     'GaussianNB', 'GaussianNB_speed', 'QuadraticDiscriminantAnalysis', 'QuadraticDiscriminantAnalysis_speed'
+    #     ]
 
-with open('full_matrix_5.csv', 'w', newline='') as csvfile:
-    fieldnames = ['TAG', 'LSTM', 'SVM', 'KNN', 'LSTM_time', 'SVM_time', 'KNN_time']
+    fieldnames = [
+       'Input_removed', 'Model', 'macro_avg', 'speed'
+        ]
+
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
     for i in skip_list:
-        for k in range(1):
+        for k in range(16):
             ignore_skip_list = ["Data", "text_class", "Data_base64"]
-            # ignore_skip_list += skip_list
-            # ignore_skip_list.pop(ignore_skip_list.index(i))
+            ## Only one data
+            ignore_skip_list += skip_list
+            ignore_skip_list.pop(ignore_skip_list.index(i))
+            ## All but removing one
             # ignore_skip_list.append(i)
+            
             print(ignore_skip_list)
-            classification_smacro_avgs, processing_time = run_a_train_eval_models(ignore_skip_list)
-            print(classification_smacro_avgs)
-            writer.writerow({
-                                'TAG': k, 
-                                'LSTM': classification_smacro_avgs[0], 
-                                'SVM': classification_smacro_avgs[1],
-                                'KNN': classification_smacro_avgs[2],
-                                'LSTM_time': processing_time[0], 
-                                'SVM_time': processing_time[1],
-                                'KNN_time': processing_time[2],
+            results = run_a_train_eval_models(ignore_skip_list)
+            print(results)
+            
+            for j in results:
+                writer.writerow({
+                    'Input_removed': i,
+                    'Model': j,
+                    'macro_avg': results[j]["macro_avg"],
+                    'speed': results[j]["speed"],
+                    })
 
-                            })
+        # writer.writerow({
+        #         'DATA': i,
+        #         'LSTM_CNN': results["LSTM_CNN"]["macro_avg"], 
+        #         'LSTM_CNN_speed': results["LSTM_CNN"]["speed"],
+        #         'SVC_linear': results["SVC(C=1, kernel='linear'"]["macro_avg"],   
+        #         'SVC_linear_speed': results["SVC(C=1, kernel='linear'"]["speed"],
+        #         'KNN': results["KNeighborsClassifier(n_neighbors=6"]["macro_avg"],   
+        #         'KNN_speed': results["KNeighborsClassifier(n_neighbors=6"]["speed"],
+        #         'GaussianProcessClassifier': results["GaussianProcessClassifier(kernel=1**2 * RBF(length_scale=1"]["macro_avg"],   
+        #         'GaussianProcessClassifier_speed': results["GaussianProcessClassifier(kernel=1**2 * RBF(length_scale=1"]["speed"],
+        #         'DecisionTreeClassifier': results["DecisionTreeClassifier(max_depth=5"]["macro_avg"],   
+        #         'DecisionTreeClassifier_speed': results["DecisionTreeClassifier(max_depth=5"]["speed"],
+        #         'RandomForestClassifier': results["RandomForestClassifier(max_depth=5, max_features=1, n_estimators=10"]["macro_avg"],   
+        #         'RandomForestClassifier_speed': results["RandomForestClassifier(max_depth=5, max_features=1, n_estimators=10"]["speed"],
+        #         'AdaBoostClassifier': results["AdaBoostClassifier"]["macro_avg"],   
+        #         'AdaBoostClassifier_speed': results["AdaBoostClassifier"]["speed"],
+        #         'GaussianNB': results["GaussianNB"]["macro_avg"],   
+        #         'GaussianNB_speed': results["GaussianNB"]["speed"],
+        #         'QuadraticDiscriminantAnalysis': results["QuadraticDiscriminantAnalysis"]["macro_avg"],   
+        #         'QuadraticDiscriminantAnalysis_speed': results["QuadraticDiscriminantAnalysis"]["speed"],    
+        #     })
 
-import os
-os.system('shutdown -s')
+
+# import os
+# os.system('shutdown -s')
 
 
 # %% Next steps,
