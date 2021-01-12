@@ -30,7 +30,9 @@ Different classifiers were trained to on parsed text data. A machine learning (L
 
 <!-- **Figure 1.5:** Significant performance upgrade? -->
 
-![Image of results](./pictures/model_subsets.png)
+![Image of results](./pictures/model_pair_wise_KW.png)
+
+**Figure 1.5:** Pairwise comparison showing rank for each classifier.
 
 <!-- ![Image of results](./pictures/comparison-CNN-LSTM.png)
 
@@ -40,15 +42,30 @@ Different classifiers were trained to on parsed text data. A machine learning (L
 
 **Figure 2.2:** F1 macro scores for validation dataset of 1 by 22 vector classifiers (Only the data appearing on the x axis). LSTM-CNN 0.51 ~ KNN 0.50 > SVM 0.42. -->
 
-# Discussion
-The custom LSTM-CNN network investigated performed better than other investigated classifiers. The execution speed was many orders of magnitude higher as seen in Figure 1.4. Even when sample amount are in the hundreds, performant classifiers can be trained using the latest machine learning techniques.
+## Statistical approach
+All observations were independently collected. The dependent variable is continuous. The Kruskal-Wallis test was chosen as a non-parametric alternative to an ANOVA because data for the depend variable (F1 macro score) violated assumptions of normality as
+determined by Shapiro-Wilk’s (1965) test of normality and did not have homogeneous variance as determined by Levene's (Olkin, 1960) test of equal variance.
 
-In the case when a single vector is used, the LSTM-CNN network performs much betters for the previous and next vectors.
+Post hoc pair-wise comparison of the Kruskal-Wallis test (a series of Mann-Whitney tests as implemented by SPSS (Bergmann et al., 2000)) revealed that a significant differences we're observed. They are depicted in Figure 1.5.
+
+# Discussion
+The custom LSTM-CNN network investigated performed better than other classifiers as implemented by SKLEARN. The execution speed was many orders of magnitude higher as seen in Figure 1.4. Even when training data are in the hundreds of samples, performant classifiers can be trained using the latest machine learning techniques.
+
+In the case when a single vector is used, the LSTM-CNN network performs much betters for the previous and next data vectors.
+
 <!-- # LSTM-CNN architecture -->
 
 # Next steps
-Checking the effect of labeling error
+Checking the effect of labeling error.
+
+Assessing the effect of hyperparameter tuning.
 
 Comparing the most important features from various sites.
 
 # References
+Shapiro, S. S., and M. B. Wilk. 1965. An analysis of variance test for normality (complete
+samples). Biometrika 52(3-4):591-611.
+
+Olkin, I. 1960. Contributions to probability and statistics; essays in honor of Harold Hotelling. Stanford studies in mathematics and statistics, 2. Stanford University Press, Stanford, Calif.
+
+Bergmann, R., P. J. M. S. Will, and J. Ludbrook. 2000. Different outcomes of the Wilcoxon-MannWhitney test from different statistics packages. The American Statistician 54(1):72-77

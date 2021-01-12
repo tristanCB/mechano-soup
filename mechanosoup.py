@@ -392,29 +392,20 @@ def run_a_train_eval_models(skip_list):
     model.add(layers.LSTM(LSTM_UNITS, activation='elu', input_shape=(Data_X.shape[1], Data_X.shape[2]), return_sequences=True))
     model.add(tf.keras.layers.Reshape((Data_X.shape[1], LSTM_UNITS, 1)))
 
-    # def add_conv_block(units):
-    #     model.add(layers.Conv2D(units, (1,3), activation='elu'))
-    #     model.add(layers.Conv2D(units, (3,1), activation='elu'))
-    #     model.add(layers.Conv2D(units, (1,3), activation='elu'))
-    #     model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
-    #     model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
-    #     # model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
-    #     # model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
-    # add_conv_block(64)
-    # add_conv_block(32)
+    units = 64
+    model.add(layers.Conv2D(units, (1,3), activation='elu'))
+    model.add(layers.Conv2D(units, (1,3), activation='elu'))
+    model.add(layers.Conv2D(units, (1,3), activation='elu'))
+    model.add(layers.Conv2D(units, (3,1), activation='elu'))
 
-    def add_conv_block(units):
-        model.add(layers.Conv2D(units, (1,3), activation='elu'))
-        model.add(layers.Conv2D(units, (1,3), activation='elu'))
-        model.add(layers.Conv2D(units, (1,3), activation='elu'))
-        # model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
-        # model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
-        # model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
-        # model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
-    add_conv_block(64)
-    add_conv_block(32)
+    model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
+    model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
+    model.add(layers.Conv2D(units/2, (1,3), activation='elu'))
+    model.add(layers.Conv2D(units/2, (3,1), activation='elu'))
 
-
+    model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
+    model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
+    model.add(layers.Conv2D(units/4, (1,3), activation='elu'))
     
     model.add(layers.Flatten())
     # model.add(layers.Dense(64, activation='elu'))
@@ -433,7 +424,7 @@ def run_a_train_eval_models(skip_list):
     # Callback to prevent overtraining
     callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
     # Train the machine
-    model.fit(X_TRAIN, Y_TRAIN, epochs=15, batch_size=64, callbacks=[callback])
+    model.fit(X_TRAIN, Y_TRAIN, epochs=20, batch_size=64, callbacks=[callback])
 
     ## %% Final evaluation of the model
     scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
@@ -530,14 +521,7 @@ skip_list = ["length","parent_tags","name","nested_structure","attribute_mask","
 
 import csv
 # %%
-with open('full_matrix_10.csv', 'w', newline='') as csvfile:
-    # fieldnames = [
-    #     'DATA', 'LSTM_CNN', 'LSTM_CNN_speed', 'SVC_linear', 
-    #     'SVC_linear_speed', 'KNN', 'KNN_speed', 'GaussianProcessClassifier',
-    #     'GaussianProcessClassifier_speed', 'DecisionTreeClassifier', 'DecisionTreeClassifier_speed', 
-    #     'RandomForestClassifier', 'RandomForestClassifier_speed', 'AdaBoostClassifier', 'AdaBoostClassifier_speed',
-    #     'GaussianNB', 'GaussianNB_speed', 'QuadraticDiscriminantAnalysis', 'QuadraticDiscriminantAnalysis_speed'
-    #     ]
+with open('full_matrix_11.csv', 'w', newline='') as csvfile:
 
     fieldnames = [
        'Input_removed', 'Model', 'macro_avg', 'speed'
@@ -545,12 +529,13 @@ with open('full_matrix_10.csv', 'w', newline='') as csvfile:
 
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
-    for i in skip_list:
-        for k in range(16):
+    # for i in skip_list:
+    for i in range(64):
+        for k in range(1):
             ignore_skip_list = ["Data", "text_class", "Data_base64"]
             ## Only one data
-            ignore_skip_list += skip_list
-            ignore_skip_list.pop(ignore_skip_list.index(i))
+            # ignore_skip_list += skip_list
+            # ignore_skip_list.pop(ignore_skip_list.index(i))
             ## All but removing one
             # ignore_skip_list.append(i)
             
@@ -565,29 +550,6 @@ with open('full_matrix_10.csv', 'w', newline='') as csvfile:
                     'macro_avg': results[j]["macro_avg"],
                     'speed': results[j]["speed"],
                     })
-
-        # writer.writerow({
-        #         'DATA': i,
-        #         'LSTM_CNN': results["LSTM_CNN"]["macro_avg"], 
-        #         'LSTM_CNN_speed': results["LSTM_CNN"]["speed"],
-        #         'SVC_linear': results["SVC(C=1, kernel='linear'"]["macro_avg"],   
-        #         'SVC_linear_speed': results["SVC(C=1, kernel='linear'"]["speed"],
-        #         'KNN': results["KNeighborsClassifier(n_neighbors=6"]["macro_avg"],   
-        #         'KNN_speed': results["KNeighborsClassifier(n_neighbors=6"]["speed"],
-        #         'GaussianProcessClassifier': results["GaussianProcessClassifier(kernel=1**2 * RBF(length_scale=1"]["macro_avg"],   
-        #         'GaussianProcessClassifier_speed': results["GaussianProcessClassifier(kernel=1**2 * RBF(length_scale=1"]["speed"],
-        #         'DecisionTreeClassifier': results["DecisionTreeClassifier(max_depth=5"]["macro_avg"],   
-        #         'DecisionTreeClassifier_speed': results["DecisionTreeClassifier(max_depth=5"]["speed"],
-        #         'RandomForestClassifier': results["RandomForestClassifier(max_depth=5, max_features=1, n_estimators=10"]["macro_avg"],   
-        #         'RandomForestClassifier_speed': results["RandomForestClassifier(max_depth=5, max_features=1, n_estimators=10"]["speed"],
-        #         'AdaBoostClassifier': results["AdaBoostClassifier"]["macro_avg"],   
-        #         'AdaBoostClassifier_speed': results["AdaBoostClassifier"]["speed"],
-        #         'GaussianNB': results["GaussianNB"]["macro_avg"],   
-        #         'GaussianNB_speed': results["GaussianNB"]["speed"],
-        #         'QuadraticDiscriminantAnalysis': results["QuadraticDiscriminantAnalysis"]["macro_avg"],   
-        #         'QuadraticDiscriminantAnalysis_speed': results["QuadraticDiscriminantAnalysis"]["speed"],    
-        #     })
-
 
 # import os
 # os.system('shutdown -s')
