@@ -310,7 +310,6 @@ def run_a_train_eval_models(skip_list):
             # skip_list = ["Data", "text_class" ,"Data_base64", "next", "previous", "attribute_mask", "re_tolkens", "nested_structure", "name", "length"]
             # skip_list = ["Data", "text_class", "Data_base64"]
 
-
             if [] != [True for i in skip_list if j == i]:
                 continue
 
@@ -385,6 +384,68 @@ def run_a_train_eval_models(skip_list):
     # X_TRAIN = np.expand_dims(X_TRAIN,axis=1)
     # print(X_TRAIN.shape)
 
+    ## MobileNet network
+    from tensorflow.keras.applications.inception_v3 import InceptionV3
+    from tensorflow.keras.layers import Input
+    MobileNet_shape = (224, 224, 3)
+    input_tensor = Input(shape=MobileNet_shape)
+
+    def pad_for_(np_array,input_shape):
+        ''' Reshaping input to be valid for a model '''
+        padded_array = []
+        for i, ij in enumerate(np_array):
+            padded = np.pad(ij, ((0,input_shape[0]-ij.shape[0]) , (0,input_shape[1]-ij.shape[1])), mode = 'constant', constant_values=(0, 0))
+            three_channel_format = np.asarray([padded,padded,padded])
+            three_channel_format = np.moveaxis(three_channel_format, 0, -1) 
+            padded_array.append(three_channel_format)
+        return np.asarray(padded_array)
+    X_TRAIN_MobileNet = pad_for_(X_TRAIN,MobileNet_shape)
+    X_VALIDATE_MobileNet = pad_for_(X_VALIDATE,MobileNet_shape)
+    # for i, ij in enumerate(X_TRAIN):
+    #     padded = np.pad(ij, ((0,MobileNet_shape[0]-ij.shape[0]) , (0,MobileNet_shape[1]-ij.shape[1])), mode = 'constant', constant_values=(0, 0))
+    #     three_channel_format = np.asarray([padded,padded,padded])
+    #     three_channel_format = np.moveaxis(three_channel_format, 0, -1) 
+    #     print(three_channel_format.shape)
+    #     X_TRAIN_MobileNet.append(three_channel_format)
+    X_TRAIN_MobileNet = np.asarray(X_TRAIN_MobileNet)
+    print(X_TRAIN_MobileNet.shape)
+    print(X_VALIDATE_MobileNet.shape)
+
+    # this could also be the output a different Keras model or layer    # this could also be the output a different Keras model or layer
+    MobileNet = tf.keras.applications.MobileNet(
+        input_shape=None,
+        alpha=1.0,
+        depth_multiplier=1,
+        dropout=0.001,
+        include_top=True,
+        weights=None,
+        input_tensor=None,
+        pooling=None,
+        classes=Data_Y_categorical.shape[1],
+        classifier_activation="softmax",
+    )
+
+    new_model = Sequential()
+    new_model.add(MobileNet)
+    new_model.add(layers.Flatten())
+    new_model.add(layers.Dense(Data_Y_categorical.shape[1], activation='softmax'))
+    print(new_model.summary())
+    new_model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=['accuracy'])
+    
+    # Callback to prevent overtraining
+    callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+    new_model.fit(X_TRAIN_MobileNet, Y_TRAIN, epochs=100, batch_size=64, callbacks=[callback], validation_split=0.1)
+
+    VALIDATION_fit = new_model.predict(X_VALIDATE_MobileNet)
+    MOBILENET_classification_report = classification_report(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
+
+    # VALIDATION MATRIX
+    val_matrix = confusion_matrix(VALIDATION_fit.argmax(axis=1), Y_VALIDATE.argmax(axis=1))
+    print(val_matrix)
+    print(MOBILENET_classification_report)
+    assert 1 == 2
+
+    ## Custom LSTM-CNN network
     model = models.Sequential()
     # LSTM_UNITS = 128
     LSTM_UNITS = 64
@@ -421,10 +482,9 @@ def run_a_train_eval_models(skip_list):
     model.compile(loss=categorical_focal_loss(), optimizer="adam", metrics=['accuracy'])
 
     print(model.summary())
-    # Callback to prevent overtraining
-    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
+   
     # Train the machine
-    model.fit(X_TRAIN, Y_TRAIN, epochs=20, batch_size=64, callbacks=[callback])
+    model.fit(X_TRAIN, Y_TRAIN, epochs=1, batch_size=64, validation_split=0.1, callbacks=[callback])
 
     ## %% Final evaluation of the model
     scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
@@ -521,7 +581,7 @@ skip_list = ["length","parent_tags","name","nested_structure","attribute_mask","
 
 import csv
 # %%
-with open('full_matrix_11.csv', 'w', newline='') as csvfile:
+with open('full_matrix_12.csv', 'w', newline='') as csvfile:
 
     fieldnames = [
        'Input_removed', 'Model', 'macro_avg', 'speed'
@@ -553,7 +613,6 @@ with open('full_matrix_11.csv', 'w', newline='') as csvfile:
 
 # import os
 # os.system('shutdown -s')
-
 
 # %% Next steps,
 # Process pages with model.predict(...) 
