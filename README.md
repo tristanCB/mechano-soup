@@ -18,7 +18,7 @@ Classifiers were repeatedly trained and assessed using a 0.33 validation/test sp
 All observations were independently collected. The dependent variable is continuous (F1 macro_avg). The Kruskal-Wallis test was chosen as a non-parametric alternative to an ANOVA because data for the depend variable (F1 macro score) violated assumptions of normality as
 determined by Shapiro-Wilk’s (1965) test of normality and did not have homogeneous variance as determined by Levene's (Olkin, 1960) test of equal variance.
 
-Post hoc pair-wise comparison of the Kruskal-Wallis test (a series of Mann-Whitney tests as implemented by SPSS (Bergmann et al., 2000)) revealed that a significant differences we're observed. They are depicted in Figure 1.5.
+Post hoc pair-wise comparison of the Kruskal-Wallis test (a series of Mann-Whitney tests as implemented by SPSS (Bergmann et al., 2000)) revealed that significant differences we're observed. They are depicted in Figure 1.5.
 
 # Results
 
