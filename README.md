@@ -40,9 +40,10 @@ Post hoc pair-wise comparison of the Kruskal-Wallis test (a series of Mann-Whitn
 
 <!-- **Figure 1.5:** Significant performance upgrade? -->
 
+**Figure 1.5:** Pairwise comparison showing rank for each classifier for balanced dataset. When imbalanced dataset (all class 0 null cases were kept) was used, MLP ~ SVC ~ LSTM with MLP performing the best.
+
 ![Image of results](./pictures/model_pair_wise_KW.png)
 
-**Figure 1.5:** Pairwise comparison showing rank for each classifier.
 
 <!-- ![Image of results](./pictures/comparison-CNN-LSTM.png)
 
@@ -57,6 +58,8 @@ The custom LSTM-CNN network investigated performed better than other classifiers
 
 In the case when a single vector is used, the LSTM-CNN network performs much betters for the previous and next data vectors.
 
+For this type of task, rule based systems are still standard practice for a variety of reasons (refer to rulebased.py). The methodology developed in machanosoup.py we're implemented to demonstrate the methodologies employed in properly assessing machine learning models (validation and training split) and comparing them. It also lays the groundwork involved in creating valid/meaningful data representations for parsed HTML using beautifulsoup4. Using this approach to scrape non domain specific data will require concerted effort and is the long term goal for this project.
+
 <!-- # LSTM-CNN architecture -->
 
 # Next steps
@@ -70,6 +73,8 @@ Assessing the effect of early stopping.
 Comparing the most important features from various sites.
 
 Do it for another website
+
+MLP classifier performed best when soup was not pruned. Remained similar to LSTM-CNN and 
 
 # References
 

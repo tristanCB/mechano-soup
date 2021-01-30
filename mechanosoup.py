@@ -22,6 +22,7 @@ import json
 import requests
 import pickle
 from functools import wraps
+import random
 
 from selenium import webdriver
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
@@ -276,22 +277,21 @@ def run_a_train_eval_models(skip_list):
     print()
 
     # %% Prune soup
-    import random
-    amount_of_null = 0
-    candidate_for_deletion = []
-    ## Check data distribution. and prune off some of the null data...
-    for i in html_text_data_frame:
-        # We will
-        if html_text_data_frame[i]["text_class"] == 0:
-            if random.randrange(10) > 2:
-                candidate_for_deletion.append(i)
-                continue
-            amount_of_null += 1
+    # amount_of_null = 0
+    # candidate_for_deletion = []
+    # ## Check data distribution. and prune off some of the null data...
+    # for i in html_text_data_frame:
+    #     # We will
+    #     if html_text_data_frame[i]["text_class"] == 0:
+    #         if random.randrange(10) > 2:
+    #             candidate_for_deletion.append(i)
+    #             continue
+    #         amount_of_null += 1
 
-    # Do the deletion randomly
-    for i in candidate_for_deletion:
-        del html_text_data_frame[i]
-    print(amount_of_null)
+    # # Do the deletion randomly
+    # for i in candidate_for_deletion:
+    #     del html_text_data_frame[i]
+    # print(amount_of_null)
 
     ## %% Construct dataset
     import numpy as np
@@ -483,16 +483,17 @@ def run_a_train_eval_models(skip_list):
     model.compile(loss=categorical_focal_loss(), optimizer="adam", metrics=['accuracy'])
 
     print(model.summary())
-   
+
+    callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3)
     # Train the machine
-    model.fit(X_TRAIN, Y_TRAIN, epochs=1, batch_size=64, validation_split=0.1, callbacks=[callback])
+    model.fit(X_TRAIN, Y_TRAIN, epochs=25, batch_size=64, callbacks=[callback])
 
     ## %% Final evaluation of the model
     scores = model.evaluate(X_VALIDATE, Y_VALIDATE, verbose=0)
-    # Time it
-
 
     VALIDATION_fit = model.predict(X_VALIDATE)
+    
+    # Time it
     LSTM_infer_time = benchmark_time(model,X_VALIDATE)
 
     TRAINING_fit = model.predict(X_TRAIN)
@@ -582,7 +583,7 @@ skip_list = ["length","parent_tags","name","nested_structure","attribute_mask","
 
 import csv
 # %%
-with open('full_matrix_12.csv', 'w', newline='') as csvfile:
+with open('full_matrix_13.csv', 'w', newline='') as csvfile:
 
     fieldnames = [
        'Input_removed', 'Model', 'macro_avg', 'speed'
