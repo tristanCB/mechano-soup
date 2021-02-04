@@ -1,11 +1,9 @@
 # Machano-soup
-Text classification of parsed tokenized HTML. Visually displayed text from websites are extracted as navigable string using (using Python's Beautiful soup 4 package) and represented as matrices containing ordered data extracted from the navigable string object. Data such as the HTML tags following the text being classified, it's parents tags, the length of the text, and the occurrence of regular expressions are used to classify it.
+Text classification of parsed tokenized HTML. Visually displayed text from the page of a website is extracted as a navigable string using Python's Beautiful soup 4 package. Matrices containing ordered data extracted from the navigable string object were used as the classifier's inputs. The text contained in a webpage was represented its HTML tag, the tags following it, its parents' tags, the length of the text, and the occurrence of regular expressions. It's corresponding class is determined by the user when building the dataset. The input data was obtained from a website displaying COVID-19 testing centers near Montreal (QC, Canada). Each navigable string was manually assigned as being part of one of the following categories: nothing, the clinic's name, wether the clinic accepts walk-in or is appointment based, opening hours, address and the contact number or email, prior to constructing the ordered matrix defining it/used to classify it.
+
+*Website specific: https://santemontreal.qc.ca/population/coronavirus-covid-19/depistage-covid-19-a-montreal/ 
 
 > machanosoup.py
-
-Comparing classifiers to extract data from a specific website: https://santemontreal.qc.ca/population/coronavirus-covid-19/depistage-covid-19-a-montreal/
-
-Process: The website's HTML was scraped and parsed with beautiful soup. The pages text items are manually classified into 6 categories: (nothing, the clinic's name, wether the clinic accepts walk-in or is appointment based, opening hours, address and the contact number or email). 
 
 # Material and methods
 Different classifiers were trained on the obtained data. A machine learning (LSTM-CNN) based approach was developed and compared with common classifiers as implemented in Sklearn (python package). All classifiers were trained on a pseudo randomly selected subset of the manually labeled data. To assess the model's performance, the macro average F1 score was considered on the remaining portion of the data not used for training (~ 33 %). 
@@ -58,7 +56,7 @@ The custom LSTM-CNN network investigated performed better than other classifiers
 
 In the case when a single vector is used, the LSTM-CNN network performs much betters for the previous and next data vectors.
 
-For this type of task, rule based systems are still standard practice for a variety of reasons (refer to rulebased.py). The methodology developed in machanosoup.py we're implemented to demonstrate the methodologies employed in properly assessing machine learning models (validation and training split) and comparing them. It also lays the groundwork involved in creating valid/meaningful data representations for parsed HTML using beautifulsoup4. Using this approach to scrape non domain specific data will require concerted effort and is the long term goal for this project.
+For this type of task, rule based systems are still standard practice for a variety of reasons (refer to rulebased.py). The methodology developed in machanosoup.py were implemented to demonstrate the methodologies employed in properly assessing machine learning models (validation and training split) and comparing them. It also lays the groundwork involved in creating valid/meaningful data representations for parsed HTML using beautifulsoup4. Using this approach to scrape non domain specific data will require concerted effort and is the long term goal for this project.
 
 <!-- # LSTM-CNN architecture -->
 
